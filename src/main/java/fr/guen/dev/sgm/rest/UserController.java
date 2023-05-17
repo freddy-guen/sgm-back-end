@@ -2,6 +2,7 @@ package fr.guen.dev.sgm.rest;
 
 import fr.guen.dev.sgm.payload.request.SignInRequest;
 import fr.guen.dev.sgm.payload.request.SignUpRequest;
+import fr.guen.dev.sgm.payload.response.DefaultResponse;
 import fr.guen.dev.sgm.payload.response.JwtAuthenticationResponse;
 import fr.guen.dev.sgm.services.interfaces.UserService;
 import fr.guen.dev.sgm.utils.Utils;
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<JwtAuthenticationResponse> signUp(@RequestBody SignUpRequest request) {
+    public ResponseEntity<DefaultResponse> signUp(@RequestBody SignUpRequest request) {
         try {
             return ResponseEntity.ok(userService.signUp(request));
         } catch (Exception exception) {
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthenticationResponse> signIn(@RequestBody SignInRequest request) {
+    public ResponseEntity<DefaultResponse> signIn(@RequestBody SignInRequest request) {
         return ResponseEntity.ok(userService.signIn(request));
     }
 
