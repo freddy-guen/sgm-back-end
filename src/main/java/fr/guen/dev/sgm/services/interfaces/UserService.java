@@ -2,12 +2,12 @@ package fr.guen.dev.sgm.services.interfaces;
 
 import fr.guen.dev.sgm.payload.request.SignInRequest;
 import fr.guen.dev.sgm.payload.request.SignUpRequest;
-import fr.guen.dev.sgm.payload.response.JwtAuthenticationResponse;
+import fr.guen.dev.sgm.payload.response.DefaultResponse;
 
 public interface UserService {
 
-    JwtAuthenticationResponse signUp(SignUpRequest signUpRequest);
-    JwtAuthenticationResponse signIn(SignInRequest signInRequest);
+    DefaultResponse signUp(SignUpRequest signUpRequest);
+    DefaultResponse signIn(SignInRequest signInRequest);
 
 
 }
