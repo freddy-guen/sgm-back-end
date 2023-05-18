@@ -1,6 +1,7 @@
 package fr.guen.dev.sgm.models;
 
 import fr.guen.dev.sgm.common.enums.Role;
+import fr.guen.dev.sgm.common.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,11 +40,11 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "status")
-    private String status;
-
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
