@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DefaultResponse {
-    private JwtAuthenticationResponse jwtAuthenticationResponse;
     private String message;
     private HttpStatus httpStatus;
 }

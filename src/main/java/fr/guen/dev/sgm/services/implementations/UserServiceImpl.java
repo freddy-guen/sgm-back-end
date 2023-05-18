@@ -2,7 +2,9 @@ package fr.guen.dev.sgm.services.implementations;
 
 import fr.guen.dev.sgm.common.enums.Role;
 import fr.guen.dev.sgm.common.enums.Status;
+import fr.guen.dev.sgm.common.mapper.UserMapper;
 import fr.guen.dev.sgm.models.User;
+import fr.guen.dev.sgm.payload.common.UserInfoDTO;
 import fr.guen.dev.sgm.payload.request.SignInRequest;
 import fr.guen.dev.sgm.payload.request.SignUpRequest;
 import fr.guen.dev.sgm.payload.response.DefaultResponse;
@@ -13,11 +15,16 @@ import fr.guen.dev.sgm.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +37,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public DefaultResponse signUp(SignUpRequest signUpRequest) {
+    public JwtAuthenticationResponse signUp(SignUpRequest signUpRequest) {
         log.info("Inside signUp : {}", signUpRequest);
         try {
             if(validateSignUpRequest(signUpRequest)) {
@@ -41,38 +48,38 @@ public class UserServiceImpl implements UserService {
                     final var user = userRepository.save(getUserFromSignUpRequest(signUpRequest));
                     var jwt = jwtService.generateToken(user);
 
-                    return DefaultResponse.builder()
-                            .jwtAuthenticationResponse(new JwtAuthenticationResponse(jwt))
-                            .message("User registered successfully.")
-                            .httpStatus(HttpStatus.OK)
-                            .build();
+                    return JwtAuthenticationResponse.builder()
+                            .token(jwt)
+                            .responseInfo(
+                                    new DefaultResponse("User registered successfully.", HttpStatus.OK)
+                            ).build();
                 } else { //Email already exist
-                    return DefaultResponse.builder()
-                            .jwtAuthenticationResponse(new JwtAuthenticationResponse(null))
-                            .message("Email already exist.")
-                            .httpStatus(HttpStatus.BAD_REQUEST)
-                            .build();
+                    return JwtAuthenticationResponse.builder()
+                            .token(null)
+                            .responseInfo(
+                                    new DefaultResponse("Email already exist.", HttpStatus.BAD_REQUEST)
+                            ).build();
                 }
             } else {
-                return DefaultResponse.builder()
-                        .jwtAuthenticationResponse(new JwtAuthenticationResponse(null))
-                        .message("Invalid data.")
-                        .httpStatus(HttpStatus.BAD_REQUEST)
-                        .build();
+                return JwtAuthenticationResponse.builder()
+                        .token(null)
+                        .responseInfo(
+                                new DefaultResponse("Invalid data.", HttpStatus.BAD_REQUEST)
+                        ).build();
             }
         } catch (Exception exception) {
             log.error("Error : {}", exception.getMessage());
         }
 
-        return DefaultResponse.builder()
-                .jwtAuthenticationResponse(new JwtAuthenticationResponse(null))
-                .message("Something went wrong.")
-                .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build();
+        return JwtAuthenticationResponse.builder()
+                .token(null)
+                .responseInfo(
+                        new DefaultResponse("Something went wrong.", HttpStatus.INTERNAL_SERVER_ERROR)
+                ).build();
     }
 
     @Override
-    public DefaultResponse signIn(SignInRequest signInRequest) {
+    public JwtAuthenticationResponse signIn(SignInRequest signInRequest) {
         log.info("Inside SignIn : {}", signInRequest);
         try {
             authenticationManager.authenticate(
@@ -81,29 +88,39 @@ public class UserServiceImpl implements UserService {
             var user = userRepository.findByEmail(signInRequest.getEmail())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
             if(user.getStatus().equals(Status.FALSE)){ //check if user status is not activated
-                return DefaultResponse.builder()
-                        .jwtAuthenticationResponse(new JwtAuthenticationResponse(null))
-                        .message("Wait for admin approval.")
-                        .httpStatus(HttpStatus.NOT_FOUND)
-                        .build();
+                return JwtAuthenticationResponse.builder()
+                        .token(null)
+                        .responseInfo(
+                                new DefaultResponse("Wait for admin approval.", HttpStatus.NOT_FOUND)
+                        ).build();
             }
 
             var jwt = jwtService.generateToken(user);
 
-            return DefaultResponse.builder()
-                    .jwtAuthenticationResponse(new JwtAuthenticationResponse(jwt))
-                    .message("User login with success.")
-                    .httpStatus(HttpStatus.OK)
-                    .build();
+            return JwtAuthenticationResponse.builder()
+                    .token(jwt)
+                    .responseInfo(
+                            new DefaultResponse("User login with success.", HttpStatus.OK)
+                    ).build();
         } catch (Exception exception) {
             log.error("Error : {}", exception.getMessage());
         }
 
-        return DefaultResponse.builder()
-                .jwtAuthenticationResponse(new JwtAuthenticationResponse(null))
-                .message("Invalid email or password.")
-                .httpStatus(HttpStatus.NOT_FOUND)
-                .build();
+        return JwtAuthenticationResponse.builder()
+                .token(null)
+                .responseInfo(
+                        new DefaultResponse("Invalid email or password.", HttpStatus.NOT_FOUND)
+                ).build();
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        try {
+            return userRepository.findAll();
+        }catch (Exception exception){
+            log.error("Error : {}", exception.getMessage());
+        }
+        return null;
     }
 
     private boolean validateSignUpRequest(SignUpRequest signUpRequest) {

@@ -1,13 +1,19 @@
 package fr.guen.dev.sgm.services.interfaces;
 
+import fr.guen.dev.sgm.models.User;
+import fr.guen.dev.sgm.payload.common.UserInfoDTO;
 import fr.guen.dev.sgm.payload.request.SignInRequest;
 import fr.guen.dev.sgm.payload.request.SignUpRequest;
-import fr.guen.dev.sgm.payload.response.DefaultResponse;
+import fr.guen.dev.sgm.payload.response.JwtAuthenticationResponse;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface UserService {
 
-    DefaultResponse signUp(SignUpRequest signUpRequest);
-    DefaultResponse signIn(SignInRequest signInRequest);
+    JwtAuthenticationResponse signUp(SignUpRequest signUpRequest);
+    JwtAuthenticationResponse signIn(SignInRequest signInRequest);
+    List<User> getAllUsers();
 
 
 }
