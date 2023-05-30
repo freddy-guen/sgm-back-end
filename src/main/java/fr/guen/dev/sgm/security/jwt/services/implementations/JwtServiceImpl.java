@@ -1,5 +1,6 @@
 package fr.guen.dev.sgm.security.jwt.services.implementations;
 
+import fr.guen.dev.sgm.common.enums.Role;
 import fr.guen.dev.sgm.security.jwt.services.interfaces.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -8,6 +9,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +42,13 @@ public class JwtServiceImpl implements JwtService {
     public boolean istokenValid(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
         return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    @Override
+    public boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals(Role.ADMIN.name()));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {

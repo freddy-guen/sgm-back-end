@@ -21,6 +21,17 @@ public class UserMapper {
         );
     }
 
+    /*public static User mapUserInfoDtoToUser(UserInfoDTO userInfoDTO) {
+        return new User(
+                user.getFirsName(),
+                user.getLastName(),
+                user.getContactNumber(),
+                user.getEmail(),
+                user.getRole(),
+                user.getStatus()
+        );
+    }*/
+
     public static List<UserInfoDTO> mepUserListToUserInfoDtoList(List<User> users){
         List<UserInfoDTO> userInfoDTOList = new ArrayList<>();
         for (User user : users) {

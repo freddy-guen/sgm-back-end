@@ -15,16 +15,14 @@ import fr.guen.dev.sgm.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -115,10 +113,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        try {
-            return userRepository.findAll();
-        }catch (Exception exception){
-            log.error("Error : {}", exception.getMessage());
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User update(Integer id, UserInfoDTO userInfoDTO) {
+        Optional<User> user = userRepository.findById(id);
+
+        if(user.isPresent()) {
+            if(validateUpdateUserRequest(userInfoDTO)) {
+                user.get().setFirsName(userInfoDTO.getFirstName());
+                user.get().setLastName(userInfoDTO.getLastName());
+                user.get().setEmail(userInfoDTO.getEmail());
+                if (!StringUtils.isBlank(userInfoDTO.getContactNumber())) {
+                    user.get().setContactNumber(userInfoDTO.getContactNumber());
+                }
+                if (userInfoDTO.getRole() != null) {
+                    user.get().setRole(userInfoDTO.getRole());
+                }
+                if (userInfoDTO.getStatus() != null) {
+                    user.get().setStatus(userInfoDTO.getStatus());
+                }
+
+                return userRepository.save(user.get());
+            } else {
+                //TODO à implémenter
+            }
+        }else {
+            //TODO à implémenter
         }
         return null;
     }
@@ -127,6 +149,11 @@ public class UserServiceImpl implements UserService {
         return !StringUtils.isBlank(signUpRequest.getFirstName()) && !StringUtils.isBlank(signUpRequest.getLastName())
                 && !StringUtils.isBlank(signUpRequest.getEmail()) && !StringUtils.isBlank(signUpRequest.getPassword())
                 && !StringUtils.isBlank(signUpRequest.getContactNumber());
+    }
+
+    private boolean validateUpdateUserRequest(UserInfoDTO userInfoDTO){
+        return !StringUtils.isBlank(userInfoDTO.getFirstName()) && !StringUtils.isBlank(userInfoDTO.getLastName())
+                && !StringUtils.isBlank(userInfoDTO.getEmail());
     }
 
     private User getUserFromSignUpRequest(SignUpRequest signUpRequest) {
